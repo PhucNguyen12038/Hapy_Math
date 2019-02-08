@@ -47,8 +47,10 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.timeLabelP1.transform = self.timeLabelP1.transform.rotated(by: CGFloat(Double.pi))
+        self.timeP1.transform = self.timeP1.transform.rotated(by: CGFloat(Double.pi))
         self.mathP1.transform = self.mathP1.transform.rotated(by: CGFloat(Double.pi))
         self.scoreLabelP1.transform = self.scoreLabelP1.transform.rotated(by: CGFloat(Double.pi))
+        self.scoreP1.transform = self.scoreP1.transform.rotated(by: CGFloat(Double.pi))
         self.answer11.transform = self.answer11.transform.rotated(by: CGFloat(Double.pi))
         self.answer12.transform = self.answer12.transform.rotated(by: CGFloat(Double.pi))
         self.answer13.transform = self.answer13.transform.rotated(by: CGFloat(Double.pi))
@@ -57,6 +59,13 @@ class ViewController: UIViewController {
     
     @IBAction func pressPlayGame(_ sender: UIButton) {
         if(answer12.titleLabel?.text == "Start"){
+            mathExpressionIndexP1 = 0
+            mathExpressionIndexP2 = 0
+            scoreP1.text = "0"
+            scoreP2.text = "0"
+            counter1 = 0
+            counter2 = 0
+            // reset score, time and math index when press start again
             let numberOfMathExpression:Int = limitNumberOfMathExpression / 2
             mathExpression = math.createExpression(numberOfMath: numberOfMathExpression)
             mathP1.text = mathExpression[mathExpressionIndexP1]
@@ -68,21 +77,26 @@ class ViewController: UIViewController {
             mathExpressionIndexP1 = mathExpressionIndexP1 + 1
             mathExpressionIndexP2 = mathExpressionIndexP2 + 1
             var mathResult1Int = Int(mathResult1)! - 1
-            answer11.setTitle(mathResult1, for: .normal)
-            answer21.setTitle(mathResult1, for: .normal)
-            answer12.setTitle(String(mathResult1Int), for: .normal)
-            answer22.setTitle(String(mathResult1Int), for: .normal)
+            var mathAnswerArray = [String]()
+            mathAnswerArray.append(mathResult1)
+            mathAnswerArray.append(String(mathResult1Int))
             mathResult1Int = Int(mathResult1)! + 1
-            answer13.setTitle(String(mathResult1Int), for: .normal)
-            answer23.setTitle(String(mathResult1Int), for: .normal)
+            mathAnswerArray.append(String(mathResult1Int))
+            mathAnswerArray.shuffle()
+            // shuffle element in array
+            answer11.setTitle(mathAnswerArray[0], for: .normal)
+            answer23.setTitle(mathAnswerArray[0], for: .normal)
+            
+            answer12.setTitle(mathAnswerArray[1], for: .normal)
+            answer21.setTitle(mathAnswerArray[1], for: .normal)
+            
+            answer22.setTitle(mathAnswerArray[2], for: .normal)
+            answer13.setTitle(mathAnswerArray[2], for: .normal)
+            
             
             // the first question have same result for both players
             startTime1()
             startTime2()
-            
-            for i in mathExpression {
-                print(i)
-            }
         }
         
         
@@ -109,24 +123,43 @@ class ViewController: UIViewController {
     
     func stopTime1(){
         timer1.invalidate()
+        if(timer2.isValid == false){
+            answer11.setTitle(nil, for: .normal)
+            answer21.setTitle(nil, for: .normal)
+            answer12.setTitle("Start", for: .normal)
+            answer22.setTitle(nil, for: .normal)
+            answer13.setTitle(nil, for: .normal)
+            answer23.setTitle(nil, for: .normal)
+        }
     }
     
     func changeMathP1(){
+        // mathExpression store math expression and result
         mathP1.text = mathExpression[mathExpressionIndexP1]
         mathExpressionIndexP1 = mathExpressionIndexP1 + 1
         mathResult1 = mathExpression[mathExpressionIndexP1]
         mathExpressionIndexP1 = mathExpressionIndexP1 + 1
-        answer11.setTitle(mathResult1, for: .normal)
-        let mathResult1Int = Int(mathResult1)! - 1
-        answer12.setTitle(String(mathResult1Int), for: .normal)
-        answer13.setTitle(String(mathResult1Int + 2), for: .normal)
+        
+        var mathResult1Int = Int(mathResult1)! - 1
+        var mathAnswerArray = [String]()
+        mathAnswerArray.append(mathResult1)
+        mathAnswerArray.append(String(mathResult1Int))
+        mathResult1Int = mathResult1Int + 2
+        mathAnswerArray.append(String(mathResult1Int))
+        mathAnswerArray.shuffle()
+        answer11.setTitle(mathAnswerArray[0], for: .normal)
+        answer12.setTitle(mathAnswerArray[1], for: .normal)
+        answer13.setTitle(mathAnswerArray[2], for: .normal)
+        // change math expression, change the answer and reset timer
         counter1 = 0
         startTime1()
     }
     
     func pressAnswerAction1(answer:String){
+        // if after press Start game
         if(answer != ""){
             var totalScore1 = Int(scoreP1.text!)
+            // if choose right answer and index does not exceed boundary
             if(answer == mathResult1 && mathExpressionIndexP1 <= limitNumberOfMathExpression){
                 totalScore1 = totalScore1! + scoreOfOneMath
                 let timeScore = limitTimeOfOneMath - counter1
@@ -135,12 +168,14 @@ class ViewController: UIViewController {
                     scoreP1.text = String(totalScore1!)
                 }
             }
+            // check index is less than boundary
             if(mathExpressionIndexP1 < limitNumberOfMathExpression){
                 changeMathP1()
             }
             else{
                 stopTime1()
                 mathExpressionIndexP1 = mathExpressionIndexP1 + 2
+                // increase index to lock touch action after the last math
             }
             
         }
@@ -173,7 +208,6 @@ class ViewController: UIViewController {
             }
             
         }
-        
     }
     
     @IBAction func pressAnswer13(_ sender: UIButton) {
@@ -194,11 +228,13 @@ class ViewController: UIViewController {
     @objc func timerAction2() {
         counter2 += 1
         timeP2.text = "\(counter2)"
+        // auto change the math expression if over time
         if(counter2 > limitTimeOfOneMath){
             if(mathExpressionIndexP2 < limitNumberOfMathExpression){
                 changeMathP2()
             }
             else{
+                // stop timer when done all math
                 stopTime2()
             }
             
@@ -207,6 +243,14 @@ class ViewController: UIViewController {
     
     func stopTime2(){
         timer2.invalidate()
+        if(timer1.isValid == false){
+            answer11.setTitle(nil, for: .normal)
+            answer21.setTitle(nil, for: .normal)
+            answer12.setTitle("Start", for: .normal)
+            answer22.setTitle(nil, for: .normal)
+            answer13.setTitle(nil, for: .normal)
+            answer23.setTitle(nil, for: .normal)
+        }
     }
     
     func changeMathP2(){
@@ -214,10 +258,18 @@ class ViewController: UIViewController {
         mathExpressionIndexP2 = mathExpressionIndexP2 + 1
         mathResult2 = mathExpression[mathExpressionIndexP2]
         mathExpressionIndexP2 = mathExpressionIndexP2 + 1
-        answer21.setTitle(mathResult2, for: .normal)
-        let mathResult2Int = Int(mathResult2)! - 1
-        answer22.setTitle(String(mathResult2Int), for: .normal)
-        answer23.setTitle(String(mathResult2Int + 2), for: .normal)
+        
+        var mathResult2Int = Int(mathResult2)! - 1
+        var mathAnswerArray = [String]()
+        mathAnswerArray.append(mathResult1)
+        mathAnswerArray.append(String(mathResult2Int))
+        mathResult2Int = mathResult2Int + 2
+        mathAnswerArray.append(String(mathResult2Int))
+        mathAnswerArray.shuffle()
+        // shuffle the position of answer
+        answer21.setTitle(mathAnswerArray[0], for: .normal)
+        answer22.setTitle(mathAnswerArray[1], for: .normal)
+        answer23.setTitle(mathAnswerArray[2], for: .normal)
         counter2 = 0
         startTime2()
     }

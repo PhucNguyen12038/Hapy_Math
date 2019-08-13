@@ -261,7 +261,7 @@ class ViewController: UIViewController {
         
         var mathResult2Int = Int(mathResult2)! - 1
         var mathAnswerArray = [String]()
-        mathAnswerArray.append(mathResult1)
+        mathAnswerArray.append(mathResult2)
         mathAnswerArray.append(String(mathResult2Int))
         mathResult2Int = mathResult2Int + 2
         mathAnswerArray.append(String(mathResult2Int))

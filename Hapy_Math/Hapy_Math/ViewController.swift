@@ -68,6 +68,7 @@ class ViewController: UIViewController {
             // reset score, time and math index when press start again
             let numberOfMathExpression:Int = limitNumberOfMathExpression / 2
             mathExpression = math.createExpression(numberOfMath: numberOfMathExpression)
+            print(mathExpression)
             mathP1.text = mathExpression[mathExpressionIndexP1]
             mathExpressionIndexP1 = mathExpressionIndexP1 + 1
             mathP2.text = mathExpression[mathExpressionIndexP2]
